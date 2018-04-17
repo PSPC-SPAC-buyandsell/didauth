@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 
 
-pkg_name = 'did-auth'
+pkg_name = 'didauth'
 version = '0.0.1'
 
 setup(
