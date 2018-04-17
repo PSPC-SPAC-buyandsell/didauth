@@ -1,4 +1,5 @@
 aiohttp
+base58
 multidict
 pynacl>=1.2.0
 requests>=2.18.0
