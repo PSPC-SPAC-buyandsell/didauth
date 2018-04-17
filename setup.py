@@ -9,7 +9,6 @@ setup(
     name=pkg_name,
     packages=[
         pkg_name,
-        '{}.proto'.format(pkg_name)
     ],
     version=version,
     description='DID authentication',
