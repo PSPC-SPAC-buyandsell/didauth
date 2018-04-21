@@ -3,7 +3,7 @@ from setuptools import setup
 
 
 pkg_name = 'didauth'
-version = '0.0.1'
+version = '1.0.0'
 
 setup(
     name=pkg_name,
@@ -13,10 +13,10 @@ setup(
     version=version,
     description='DID authentication',
     license='MIT',
-    author='PSPS-SPAC',
+    author='PSPC-SPAC',
     author_email='',
-    url='https://github.com/cywolf/{}'.format(pkg_name),
-    download_url='https://github.com/cywolf/{}/archive/{}.tar.gz'.format(pkg_name, version),
+    url='https://github.com/PSPC-SPAC-buyandsell/{}'.format(pkg_name),
+    download_url='https://github.com/PSPC-SPAC-buyandsell/{}/archive/{}.tar.gz'.format(pkg_name, version),
     keywords=['verified-organizations-network', 'VON', 'SRI', 'DID', 'TheOrgBook', 'Hyperledger', 'Indy', 'HTTP'],
     classifiers=[
         'Development Status :: 3 - Alpha',
