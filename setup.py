@@ -24,9 +24,10 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: MIT',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.5.3',
     install_requires=[
         'aiohttp',
         'base58',
