@@ -32,7 +32,7 @@ setup(
         'aiohttp',
         'base58',
         'multidict',
-        'pynacl',
+        'libnacl',
         'requests',
         'rsa',
         'secp256k1',

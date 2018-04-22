@@ -1,4 +1,5 @@
-import nacl.signing
+import libnacl
+import libnacl.sign
 import rsa
 import secp256k1
 
@@ -13,37 +14,31 @@ class Ed25519Signer(SignerBase):
         if secret:
             if len(secret) != self.seed_length:
                 raise Exception('Key must be {} bytes in length'.format(self.seed_length))
-            self._prvkey = nacl.signing.SigningKey(secret)
-        else:
-            self._prvkey = nacl.signing.SigningKey.generate()
+        self._signer = libnacl.sign.Signer(secret)
 
     @property
     def private_key(self) -> bytes:
-        return bytes(self._prvkey)
+        return bytes(self._signer.pk)
 
     @property
     def public_key(self) -> bytes:
-        return bytes(self._prvkey.verify_key)
+        return bytes(self._signer.vk)
 
     def _sign(self, data: bytes) -> bytes:
-        signed = self._prvkey.sign(data)
-        return signed.signature
+        return self._signer.signature(data)
 
 
 class Ed25519Verifier(VerifierBase):
     algorithm = 'ed25519'
 
     def __init__(self, _key_type, pubkey):
-        if isinstance(pubkey, nacl.signing.VerifyKey):
-            self._pubkey = pubkey
-        else:
-            self._pubkey = nacl.signing.VerifyKey(pubkey)
+        self._pubkey = pubkey
 
     def _verify(self, message: bytes, signature: bytes) -> bool:
         try:
-            self._pubkey.verify(message, signature)
+            libnacl.crypto_sign_open(signature + message, self._pubkey)
             return True
-        except nacl.exceptions.BadSignatureError:
+        except ValueError:
             return False
 
 
