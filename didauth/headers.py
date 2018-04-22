@@ -55,7 +55,7 @@ class HeaderSigner:
     def signer(self):
         return self._signer
 
-    def sign(self, headers: Mapping, host=None, method=None, path=None):
+    def sign(self, headers: Mapping, method=None, path=None):
         """
         Add Signature Authorization header to case-insensitive header dict.
 
@@ -66,7 +66,7 @@ class HeaderSigner:
         `path` is the HTTP path (required when using '(request-target)').
         """
         required_headers = self.header_list
-        message = generate_message(required_headers, headers, host, method, path)
+        message = generate_message(required_headers, headers, method, path)
 
         signature = encode_string(self._signer.sign(message), 'base64')
         ret_headers = multidict.CIMultiDict(headers)

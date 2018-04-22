@@ -1,5 +1,6 @@
 import base64
 import binascii
+import email.utils
 import hashlib
 import re
 import struct
@@ -33,6 +34,17 @@ def ct_bytes_compare(a, b):
     return (result == 0)
 
 
+def default_signing_headers(headers, required=None):
+    header_list = set( ('(request-target)', 'date') )
+    header_list.update(h.lower() for h in (required or headers.keys()))
+    # don't sign proxy or connection headers as they could change during routing
+    skip_headers = (
+        'authorization', 'connection', 'forwarded', 'proxy-connection', 'via',
+        'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-port', 'x-forwarded-proto')
+    header_list.difference_update(skip_headers)
+    return header_list
+
+
 def signing_header(name, values):
     if isinstance(values, str):
         value = values
@@ -41,8 +53,7 @@ def signing_header(name, values):
     return '{}: {}'.format(name, value)
 
 
-def generate_message(required_headers, headers, host=None, method=None,
-                     path=None) -> bytes:
+def generate_message(required_headers, headers, method=None, path=None) -> bytes:
     headers = multidict.CIMultiDict(headers)
 
     if not required_headers:
@@ -55,18 +66,8 @@ def generate_message(required_headers, headers, host=None, method=None,
             if not method or not path:
                 raise Exception('Method and path arguments required when ' +
                                 'using "(request-target)"')
+            print('{} {}'.format(method.lower(), path))
             signable_list.append(signing_header(h, '{} {}'.format(method.lower(), path)))
-
-        elif h == 'host':
-            # 'host' special case due to requests lib restrictions
-            # 'host' is not available when adding auth so must use a param
-            # if no param used, defaults back to the 'host' header
-            if not host:
-                if 'host' in headers:
-                    host = headers[h]
-                else:
-                    raise Exception('Missing required header "%s"' % h)
-            signable_list.append(signing_header(h, host))
         else:
             if h not in headers:
                 raise Exception('Missing required header "%s"' % h)
@@ -198,39 +199,5 @@ def parse_asn_int(asn: bytes):
     return val, asn[4:]
 
 
-def lkv(d: bytes):
-    parts = []
-    while d:
-        length = struct.unpack('>I', d[:4])[0]
-        bits = d[4:length+4]
-        parts.append(bits)
-        d = d[length+4:]
-    return parts
-
-
-def sig(d):
-    return lkv(d)[1]
-
-
-def is_rsa(keyobj):
-    return lkv(keyobj.blob)[0] == "ssh-rsa"
-
-
-# currently busted...
-def get_fingerprint(key):
-    """
-    Takes an ssh public key and generates the fingerprint.
-
-    See: http://tools.ietf.org/html/rfc4716 for more info
-    """
-    if key.startswith('ssh-rsa'):
-        key = key.split(' ')[1]
-    else:
-        regex = r'\-{4,5}[\w|| ]+\-{4,5}'
-        key = re.split(regex, key)[1]
-
-    key = key.replace('\n', '')
-    key = key.strip().encode('ascii')
-    key = base64.b64decode(key)
-    fp_plain = hashlib.md5(key).hexdigest()
-    return ':'.join(a+b for a, b in zip(fp_plain[::2], fp_plain[1::2]))
+def format_date_header():
+    return email.utils.formatdate()

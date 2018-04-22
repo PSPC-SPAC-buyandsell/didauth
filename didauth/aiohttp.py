@@ -5,6 +5,7 @@ from aiohttp import ClientRequest
 
 from .headers import HeaderSigner
 from .registry import ALL as registry
+from .utils import default_signing_headers, format_date_header
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,12 +19,11 @@ class SignedRequestAuth:
     def header_signer(self, header_list: Sequence):
         return HeaderSigner(self._key_id, self._signer, header_list)
 
-    def signed_headers(self, method: str, uri: str, headers: Mapping):
-        LOGGER.info('Signing headers: %s "%s" %s', method, uri, headers)
-        header_list = set() # set('(request-target)')
-        header_list.update(self._header_list or headers.keys())
+    def signed_headers(self, method: str, path: str, headers: Mapping):
+        LOGGER.info('Signing headers: %s "%s" %s', method, path, headers)
+        header_list = default_signing_headers(headers, self._header_list)
         hs = self.header_signer(header_list)
-        result = hs.sign(headers, method=method, path=uri)
+        result = hs.sign(headers, method=method, path=path)
         LOGGER.info('Signed headers: %s', result)
         return result
 
@@ -33,7 +33,9 @@ class SignedRequest(ClientRequest):
         if auth is None:
             auth = self.auth
         if isinstance(auth, SignedRequestAuth):
-            signed_headers = auth.signed_headers(self.method, self.url, self.headers)
+            if 'date' not in self.headers:
+                self.headers['Date'] = format_date_header()
+            signed_headers = auth.signed_headers(self.method, self.url.path_qs, self.headers)
             if signed_headers:
                 self.headers.clear()
                 self.headers.update(signed_headers)
