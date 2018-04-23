@@ -129,6 +129,16 @@ class HeaderVerifier:
         handler = self._handlers.create_verifier(algo, pubkey)
         message = generate_message(auth_headers, headers, host, method, path)
 
-        signature = decode_string(auth_params['signature'], 'base64')
+        signature = auth_params['signature']
+        raw_signature = decode_string(signature, 'base64')
 
-        return handler.verify(message, signature)
+        if handler.verify(message, raw_signature):
+            return {
+                'verified': True,
+                'algorithm': algo,
+                'headers': auth_headers,
+                'keyId': key_id,
+                'key': pubkey,
+                'signature': signature
+            }
+        raise HttpSigException("Signature could not be verified for keyId '{}'".format(key_id))
