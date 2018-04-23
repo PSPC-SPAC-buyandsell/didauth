@@ -4,11 +4,11 @@ from typing import Mapping, Sequence
 
 import multidict
 
-from .base import KeyFinderBase, SignerBase
+from .base import KeyFinderBase, SignerBase, VerifierException
 from . import registry
 from .utils import \
     build_signature_template, generate_message, parse_authorization_header, \
-    decode_string, encode_string, HttpSigException
+    decode_string, encode_string
 
 
 class HeaderSigner:
@@ -107,24 +107,24 @@ class HeaderVerifier:
 
         for param in ('algorithm', 'keyId', 'signature'):
             if param not in auth_params:
-                raise HttpSigException("Unsupported HTTP signature, missing '{}'".format(param))
+                raise VerifierException("Unsupported HTTP signature, missing '{}'".format(param))
 
         auth_headers = (auth_params.get('headers') or 'date').lower().strip().split()
 
         missing_reqd = set(self._required_headers) - set(auth_headers)
         if len(missing_reqd) > 0:
             error_headers = ', '.join(missing_reqd)
-            raise HttpSigException(
+            raise VerifierException(
                     'One or more required headers not provided: {}'.format(missing_reqd))
 
         key_id, algo = auth_params['keyId'], auth_params['algorithm']
 
         if not self._handlers.supports(algo):
-            raise HttpSigException("Unsupported HTTP signature algorithm '{}'".format(algo))
+            raise VerifierException("Unsupported HTTP signature algorithm '{}'".format(algo))
 
         pubkey = self._key_finder.find_key(key_id, algo)
         if not pubkey:
-            raise HttpSigException("Cannot locate public key for '{}'".format(key_id))
+            raise VerifierException("Cannot locate public key for '{}'".format(key_id))
 
         handler = self._handlers.create_verifier(algo, pubkey)
         message = generate_message(auth_headers, headers, method, path)
@@ -141,4 +141,4 @@ class HeaderVerifier:
                 'key': pubkey,
                 'signature': signature
             }
-        raise HttpSigException("Signature could not be verified for keyId '{}'".format(key_id))
+        raise VerifierException("Signature could not be verified for keyId '{}'".format(key_id))

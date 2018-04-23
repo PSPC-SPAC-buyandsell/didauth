@@ -10,10 +10,6 @@ import base58
 import multidict
 
 
-class HttpSigException(Exception):
-    pass
-
-
 def ct_bytes_compare(a, b):
     """
     Constant-time string compare.

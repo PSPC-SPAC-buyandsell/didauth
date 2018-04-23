@@ -48,6 +48,10 @@ class VerifierBase:
         return self._verify(message, signature)
 
 
+class VerifierException(Exception):
+    pass
+
+
 class KeyFinderBase:
     def find_key(self, key_id: str, key_type: str) -> bytes:
         raise LookupError('Key lookup not implemented')
