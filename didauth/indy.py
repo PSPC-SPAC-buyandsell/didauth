@@ -24,7 +24,7 @@ class IndyKeyFinder(KeyFinderBase):
         self._agent = agent
 
     def find_key(key_id: str, key_type: str) -> bytes:
-        if key_type != 'ed21559':
+        if key_type != 'ed25519':
             return None
         if key_id.startswith('did:sov:'):
             key_id = key_id[8:]
