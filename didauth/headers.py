@@ -87,7 +87,7 @@ class HeaderVerifier:
             required_headers = [] # implementors should require (request-target) and date
         self._required_headers = [h.lower() for h in required_headers]
 
-    def verify(self, headers: Mapping, host=None, method=None, path=None):
+    def verify(self, headers: Mapping, method=None, path=None):
         """
         Parse Signature Authorization header and verify signature
 
@@ -127,7 +127,7 @@ class HeaderVerifier:
             raise HttpSigException("Cannot locate public key for '{}'".format(key_id))
 
         handler = self._handlers.create_verifier(algo, pubkey)
-        message = generate_message(auth_headers, headers, host, method, path)
+        message = generate_message(auth_headers, headers, method, path)
 
         signature = auth_params['signature']
         raw_signature = decode_string(signature, 'base64')
