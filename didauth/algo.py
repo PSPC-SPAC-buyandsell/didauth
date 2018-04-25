@@ -49,7 +49,6 @@ class RsaSigner(SignerBase):
         if isinstance(secret, rsa.PrivateKey):
             self._prvkey = secret
         elif secret:
-            print(secret)
             if b'RSA PRIVATE KEY' in secret:
                 self._prvkey = rsa.PrivateKey.load_pkcs1(secret, format='PEM')
             else:

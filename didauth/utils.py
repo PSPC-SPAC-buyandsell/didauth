@@ -62,7 +62,6 @@ def generate_message(required_headers, headers, method=None, path=None) -> bytes
             if not method or not path:
                 raise Exception('Method and path arguments required when ' +
                                 'using "(request-target)"')
-            print('{} {}'.format(method.lower(), path))
             signable_list.append(signing_header(h, '{} {}'.format(method.lower(), path)))
         else:
             if h not in headers:
