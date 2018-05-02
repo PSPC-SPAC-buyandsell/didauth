@@ -3,9 +3,9 @@ from typing import Mapping, Sequence
 
 from aiohttp import ClientRequest
 
-from .headers import HeaderSigner
-from .registry import ALL as registry
-from .utils import default_signing_headers, format_date_header
+from ..headers import HeaderSigner
+from ..registry import ALL as registry
+from ..utils import default_signing_headers, format_date_header
 
 LOGGER = logging.getLogger(__name__)
 

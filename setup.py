@@ -29,12 +29,8 @@ setup(
     ],
     python_requires='>=3.5.3',
     install_requires=[
-        'aiohttp',
         'base58',
         'multidict',
         'libnacl',
-        'requests',
-        'rsa',
-        'secp256k1',
     ],
 )
