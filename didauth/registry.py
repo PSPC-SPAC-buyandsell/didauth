@@ -12,6 +12,9 @@ class SignatureHandlers:
     def supports(self, key_type: str):
         return key_type in self._classes
 
+    def get_supported(self):
+        return self._classes.keys()
+
     def create_signer(self, key_type, secret, secret_format=None):
         if secret and secret_format:
             secret = decode_string(secret, secret_format)
