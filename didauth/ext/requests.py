@@ -33,11 +33,11 @@ class SignedRequestAuth(requests.auth.AuthBase):
         return HeaderSigner(self._key_id, self._signer, header_list)
 
     def signed_headers(self, method: str, uri: str, headers: Mapping):
-        LOGGER.info('Signing headers: %s "%s" %s', method, uri, headers)
+        LOGGER.debug('Signing headers: %s "%s" %s', method, uri, headers)
         header_list = default_signing_headers(headers, self._header_list)
         hs = self.header_signer(header_list)
         result = hs.sign(headers, method=method, path=uri)
-        LOGGER.info('Signed headers: %s', result)
+        LOGGER.debug('Signed headers: %s', result)
         return result
 
     def __call__(self, req):
