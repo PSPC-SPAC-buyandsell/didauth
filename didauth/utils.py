@@ -35,7 +35,7 @@ def default_signing_headers(headers, required=None):
     header_list.update(h.lower() for h in (required or headers.keys()))
     # don't sign proxy or connection headers as they could change during routing
     skip_headers = (
-        'authorization', 'connection', 'forwarded', 'proxy-connection', 'via',
+        'authorization', 'connection', 'cookie', 'forwarded', 'proxy-connection', 'via',
         'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-port', 'x-forwarded-proto')
     header_list.difference_update(skip_headers)
     return header_list
