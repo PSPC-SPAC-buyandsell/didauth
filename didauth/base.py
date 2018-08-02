@@ -2,8 +2,8 @@ from .utils import decode_string, encode_string
 
 
 class SignerBase:
-    def __init__(self, key_type, secret=None):
-        pass
+    def __init__(self, _key_type, _secret=None):
+        self._pubkey = None
 
     @property
     def algorithm(self) -> str:
@@ -17,7 +17,7 @@ class SignerBase:
     def public_key(self) -> bytes:
         return self._pubkey
 
-    def _sign(self, data: bytes) -> bytes:
+    def _sign(self, _data: bytes) -> bytes:
         raise SystemError('Not implemented')
 
     def sign(self, data, return_format=None) -> bytes:
@@ -32,14 +32,14 @@ class SignerBase:
 
 
 class VerifierBase:
-    def __init__(self, key_type, pubkey):
-        pass
+    def __init__(self, _key_type, _pubkey=None):
+        self._pubkey = None
 
     @property
     def public_key(self) -> bytes:
         pass
 
-    def _verify(self, message: bytes, signature: bytes) -> bool:
+    def _verify(self, _message: bytes, _signature: bytes) -> bool:
         raise SystemError('Not implemented')
 
     def verify(self, message, signature, signature_format=None) -> bool:
@@ -48,12 +48,8 @@ class VerifierBase:
         return self._verify(message, signature)
 
 
-class VerifierException(Exception):
-    pass
-
-
 class KeyFinderBase:
-    def find_key(self, key_id: str, key_type: str) -> bytes:
+    def find_key(self, _key_id: str, _key_type: str) -> bytes:
         raise LookupError('Key lookup not implemented')
 
 

@@ -2,16 +2,19 @@ import libnacl
 import libnacl.sign
 
 from ..base import SignerBase, VerifierBase
+from ..error import SignerException
 
 
 class Signer(SignerBase):
     algorithm = 'ed25519'
     seed_length = 32
 
-    def __init__(self, _key_type, secret=None):
+    def __init__(self, key_type, secret=None):
+        super(Signer, self).__init__(key_type, secret)
         if secret:
             if len(secret) != self.seed_length:
-                raise Exception('Key must be {} bytes in length'.format(self.seed_length))
+                raise SignerException(
+                    'Key must be {} bytes in length'.format(self.seed_length))
         self._signer = libnacl.sign.Signer(secret)
 
     @property
@@ -29,7 +32,8 @@ class Signer(SignerBase):
 class Verifier(VerifierBase):
     algorithm = 'ed25519'
 
-    def __init__(self, _key_type, pubkey):
+    def __init__(self, key_type, pubkey):
+        super(Verifier, self).__init__(key_type)
         self._pubkey = pubkey
 
     def _verify(self, message: bytes, signature: bytes) -> bool:

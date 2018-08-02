@@ -1,13 +1,14 @@
 import base64
 import binascii
 import email.utils
-import hashlib
 import re
 import struct
 from urllib.request import parse_http_list
 
 import base58
 import multidict
+
+from .error import SignerException, VerifierException
 
 
 def ct_bytes_compare(a, b):
@@ -30,8 +31,10 @@ def ct_bytes_compare(a, b):
     return (result == 0)
 
 
-def default_signing_headers(headers, required=None):
-    header_list = set( ('(request-target)', 'date') )
+def default_signing_headers(headers, required=None, sign_target=True):
+    header_list = {'date'}
+    if sign_target:
+        header_list.add('(request-target)')
     header_list.update(h.lower() for h in (required or headers.keys()))
     # don't sign proxy or connection headers as they could change during routing
     skip_headers = (
@@ -60,12 +63,12 @@ def generate_message(required_headers, headers, method=None, path=None) -> bytes
         h = h.lower()
         if h == '(request-target)':
             if not method or not path:
-                raise Exception('Method and path arguments required when ' +
-                                'using "(request-target)"')
+                raise SignerException('Method and path arguments required when ' +
+                                      'using "(request-target)"')
             signable_list.append(signing_header(h, '{} {}'.format(method.lower(), path)))
         else:
             if h not in headers:
-                raise Exception('Missing required header "%s"' % h)
+                raise SignerException('Missing required header "%s"' % h)
             signable_list.append(signing_header(h, headers.getall(h)))
 
     signable = '\n'.join(signable_list).encode('ascii')
@@ -78,8 +81,8 @@ def parse_authorization_header(header):
 
     auth = header.split(' ', 1)
     if len(auth) > 2:
-        raise HttpSigException('Invalid authorization header. (eg. Method ' +
-                         'key1=value1,key2="value, \"2\"")')
+        raise VerifierException('Invalid authorization header. (eg. Method ' +
+                                'key1=value1,key2="value, \"2\"")')
 
     # Split up any args into a dictionary.
     values = multidict.CIMultiDict()
@@ -130,26 +133,26 @@ def build_signature_template(key_id, algorithm, headers):
     return sig_string
 
 
-def encode_string(key, format: str) -> bytes:
-    if format == 'base58':
+def encode_string(key, enc_format: str) -> bytes:
+    if enc_format == 'base58':
         return base58.b58encode(key)
-    elif format == 'base64':
+    elif enc_format == 'base64':
         return base64.b64encode(key)
-    elif format == 'hex':
+    elif enc_format == 'hex':
         return binascii.hexlify(key)
     else:
-        raise Exception('Key format not supported: {}'.format(format))
+        raise VerifierException('Key format not supported: {}'.format(enc_format))
 
 
-def decode_string(key, format: str) -> bytes:
-    if format == 'base58':
+def decode_string(key, enc_format: str) -> bytes:
+    if enc_format == 'base58':
         return base58.b58decode(key)
-    elif format == 'base64':
+    elif enc_format == 'base64':
         return base64.b64decode(key)
-    elif format == 'hex':
+    elif enc_format == 'hex':
         return binascii.unhexlify(key)
     else:
-        raise Exception('Key format not supported: {}'.format(format))
+        raise VerifierException('Key format not supported: {}'.format(enc_format))
 
 
 def decode_rsa_key(key):
@@ -161,7 +164,7 @@ def decode_rsa_key(key):
     if pfx:
         pfx_type = pfx.group(1)
         if 'PRIVATE KEY' not in pfx_type:
-            raise Exception('Not recognized as a private key: {}'.format(pfx_type))
+            raise VerifierException('Not recognized as a private key: {}'.format(pfx_type))
         if pfx_type == 'PRIVATE KEY':
             return ('PKCS8', key.encode('ascii'))
         elif pfx_type == 'RSA PRIVATE KEY':
@@ -179,14 +182,14 @@ def decode_rsa_key(key):
         _count, content = parse_asn_int(content)
         content, _rest = parse_asn_str(content)
 
-    type, content = parse_asn_str(content)
+    asn_type, content = parse_asn_str(content)
     result, _rest = parse_asn_str(content)
-    return (type.decode('ascii'), result)
+    return (asn_type.decode('ascii'), result)
 
 
 def parse_asn_str(asn: bytes):
     length = struct.unpack('>I', asn[:4])[0]
-    bits = asn[4:length+4]
+    _bits = asn[4:length+4]
     return asn[4:length+4], asn[length+4:]
 
 def parse_asn_int(asn: bytes):

@@ -1,8 +1,6 @@
-import base58
 import libnacl.sign
-from von_agent.agents import _BaseAgent
 
-from .base import KeyFinderBase
+from .utils import encode_string
 
 
 def seed_to_did(seed):
@@ -16,19 +14,4 @@ def seed_to_did(seed):
     if isinstance(seed, str):
         seed = seed.encode('ascii')
     signer = libnacl.sign.Signer(seed)
-    return base58.b58encode(signer.vk[:16])
-
-
-class IndyKeyFinder(KeyFinderBase):
-    def __init__(self, agent:_BaseAgent):
-        self._agent = agent
-
-    def find_key(key_id: str, key_type: str) -> bytes:
-        if key_type != 'ed25519':
-            return None
-        if key_id.startswith('did:sov:'):
-            key_id = key_id[8:]
-        nym = self._agent.get_nym(key_id)
-        if not nym:
-            return None
-        return base58.b58decode(nym['verkey'])
+    return encode_string(signer.vk[:16], 'base58')

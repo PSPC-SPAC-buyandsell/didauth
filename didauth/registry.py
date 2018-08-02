@@ -1,5 +1,5 @@
 from . import algo
-from .utils import decode_string, encode_string
+from .utils import decode_string
 
 
 class SignatureHandlers:

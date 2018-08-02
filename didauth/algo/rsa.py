@@ -1,19 +1,21 @@
 import rsa
 
 from ..base import SignerBase, VerifierBase
+from ..error import SignerException
 
 
 class Signer(SignerBase):
     algorithm = 'rsa-sha256'
 
-    def __init__(self, _key_type, secret=None):
+    def __init__(self, key_type, secret=None):
+        super(Signer, self).__init__(key_type)
         if isinstance(secret, rsa.PrivateKey):
             self._prvkey = secret
         elif secret:
             if b'RSA PRIVATE KEY' in secret:
                 self._prvkey = rsa.PrivateKey.load_pkcs1(secret, format='PEM')
             else:
-                raise Exception('Key format not supported')
+                raise SignerException('Key format not supported')
         else:
             self._pubkey, self._prvkey = rsa.newkeys(512)
 
@@ -32,7 +34,8 @@ class Signer(SignerBase):
 class Verifier(VerifierBase):
     algorithm = 'rsa-sha256'
 
-    def __init__(self, _key_type, pubkey):
+    def __init__(self, key_type, pubkey):
+        super(Verifier, self).__init__(key_type)
         if isinstance(pubkey, rsa.PublicKey):
             self._pubkey = pubkey
         elif pubkey:

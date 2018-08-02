@@ -1,10 +1,9 @@
-import base64
-import os
 from typing import Mapping, Sequence
 
 import multidict
 
-from .base import KeyFinderBase, SignerBase, VerifierException
+from .base import KeyFinderBase, SignerBase
+from .error import VerifierException
 from . import registry
 from .utils import \
     build_signature_template, generate_message, parse_authorization_header, \
@@ -79,7 +78,7 @@ class HeaderVerifier:
     """
     Verifies an HTTP signature from given headers.
     """
-    def __init__(self, key_finder:KeyFinderBase, handlers:registry.SignatureHandlers=None,
+    def __init__(self, key_finder: KeyFinderBase, handlers: registry.SignatureHandlers = None,
                  required_headers=None):
         self._key_finder = key_finder
         self._handlers = handlers or registry.ALL
@@ -112,10 +111,10 @@ class HeaderVerifier:
         auth_headers = (auth_params.get('headers') or 'date').lower().strip().split()
 
         missing_reqd = set(self._required_headers) - set(auth_headers)
-        if len(missing_reqd) > 0:
+        if missing_reqd:
             error_headers = ', '.join(missing_reqd)
             raise VerifierException(
-                    'One or more required headers not provided: {}'.format(missing_reqd))
+                'One or more required headers not provided: {}'.format(error_headers))
 
         key_id, algo = auth_params['keyId'], auth_params['algorithm']
 

@@ -1,18 +1,21 @@
 import secp256k1
 
 from ..base import SignerBase, VerifierBase
+from ..error import SignerException
 
 
 class Signer(SignerBase):
     algorithm = 'secp256k1'
     seed_length = 32
 
-    def __init__(self, _key_type, secret=None):
+    def __init__(self, key_type, secret=None):
+        super(Signer, self).__init__(key_type, secret)
         if isinstance(secret, secp256k1.PrivateKey):
             self._prvkey = secret
         elif secret:
             if len(secret) != self.seed_length:
-                raise Exception('Key must be {} bytes in length'.format(self.seed_length))
+                raise SignerException(
+                    'Key must be {} bytes in length'.format(self.seed_length))
             self._prvkey = secp256k1.PrivateKey(secret, raw=True)
         else:
             self._prvkey = secp256k1.PrivateKey()
@@ -33,7 +36,8 @@ class Signer(SignerBase):
 class Verifier(VerifierBase):
     algorithm = 'secp256k1'
 
-    def __init__(self, _key_type, pubkey):
+    def __init__(self, key_type, pubkey):
+        super(Verifier, self).__init__(key_type)
         if isinstance(pubkey, secp256k1.PublicKey):
             self._pubkey = pubkey
         elif pubkey:
