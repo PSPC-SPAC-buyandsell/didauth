@@ -32,16 +32,18 @@ def ct_bytes_compare(a, b):
 
 
 def default_signing_headers(headers, required=None, sign_target=True):
-    header_list = {'date'}
+    header_set = {'date'}
     if sign_target:
-        header_list.add('(request-target)')
-    header_list.update(h.lower() for h in (required or headers.keys()))
+        header_set.add('(request-target)')
+    header_set.update(h.lower() for h in (required or headers.keys()))
+    if not sign_target and 'host' in header_set and not required:
+        header_set.remove('host')
     # don't sign proxy or connection headers as they could change during routing
     skip_headers = (
         'authorization', 'connection', 'cookie', 'forwarded', 'proxy-connection', 'via',
         'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-port', 'x-forwarded-proto')
-    header_list.difference_update(skip_headers)
-    return header_list
+    header_set.difference_update(skip_headers)
+    return header_set
 
 
 def signing_header(name, values):
@@ -88,7 +90,7 @@ def parse_authorization_header(header):
     values = multidict.CIMultiDict()
     if len(auth) == 2:
         auth_value = auth[1]
-        if auth_value and len(auth_value):
+        if auth_value:
             # This is tricky string magic.  Let urllib do it.
             fields = parse_http_list(auth_value)
 
@@ -97,7 +99,7 @@ def parse_authorization_header(header):
                 if '=' in item:
                     # Split on the first '=' only.
                     key, value = item.split('=', 1)
-                    if not (len(key) and len(value)):
+                    if not key or not value:
                         continue
 
                     # Unquote values, if quoted.
