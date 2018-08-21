@@ -49,18 +49,35 @@ class VerifierBase:
 
 
 class KeyFinderBase:
-    async def find_key(self, _key_id: str, _key_type: str) -> bytes:
+    def __init__(self, cache: 'KeyFinderBase' = None):
+        self._cache = cache
+
+    async def lookup_key(self, key_id: str, key_type: str) -> bytes:
         raise LookupError('Key lookup not implemented')
+
+    def add_key(self, key_id: str, key_type: str, key: bytes):
+        pass
+
+    async def find_key(self, key_id: str, key_type: str, use_cache: bool = True) -> bytes:
+        found = None
+        if use_cache and self._cache:
+            found = await self._cache.find_key(key_id, key_type)
+        if not found:
+            found = await self.lookup_key(key_id, key_type)
+            if use_cache and self._cache:
+                self._cache.add_key(key_id, key_type)
+        return found
 
 
 class StaticKeyFinder(KeyFinderBase):
-    def __init__(self):
+    def __init__(self, cache: 'KeyFinderBase' = None):
+        super(StaticKeyFinder, self).__init__(cache)
         self._keys = {}
 
-    def add_key(self, key_id, key_type, key):
+    def add_key(self, key_id: str, key_type: str, key: bytes):
         self._keys[key_id] = (key_type, key)
 
-    async def find_key(self, key_id: str, key_type: str) -> bytes:
+    async def lookup_key(self, key_id: str, key_type: str) -> bytes:
         key = self._keys.get(key_id)
         if not key:
             return None
