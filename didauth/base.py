@@ -49,7 +49,7 @@ class VerifierBase:
 
 
 class KeyFinderBase:
-    def find_key(self, _key_id: str, _key_type: str) -> bytes:
+    async def find_key(self, _key_id: str, _key_type: str) -> bytes:
         raise LookupError('Key lookup not implemented')
 
 
@@ -60,7 +60,7 @@ class StaticKeyFinder(KeyFinderBase):
     def add_key(self, key_id, key_type, key):
         self._keys[key_id] = (key_type, key)
 
-    def find_key(self, key_id: str, key_type: str) -> bytes:
+    async def find_key(self, key_id: str, key_type: str) -> bytes:
         key = self._keys.get(key_id)
         if not key:
             return None

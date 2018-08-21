@@ -1,3 +1,6 @@
+import asyncio
+import pytest
+
 from didauth.base import StaticKeyFinder
 from didauth.headers import HeaderSigner, HeaderVerifier
 from didauth.registry import ALL
@@ -11,7 +14,8 @@ TEST_DID = 'did:sov:47MC9bBzTfrsdETN6aSBAT'
 TEST_SECRET = b'test-key-00000000000000000000000'
 
 
-def test_headers():
+@pytest.mark.asyncio
+async def test_headers():
 
     headers = {
         'Date': 'Thu, 01 May 2018 00:00:00 -0000',
@@ -37,7 +41,7 @@ def test_headers():
     key_finder.add_key(TEST_DID, ALG_ED25519, signer.public_key)
 
     verifier = HeaderVerifier(key_finder)
-    verified = verifier.verify(signed_headers, method, path)
+    verified = await verifier.verify(signed_headers, method, path)
 
     print('Verify result: {}'.format(verified))
 
@@ -48,3 +52,8 @@ def test_headers():
     assert verified['key'] == signer.public_key
     assert verified['signature'] == \
         '+lqX6t0Jq2nELAzFMuVDsyuz2PJmMMSF1eiXuNg7dNyD0r+t9VwGDpMlxvtrI1DdfI0yQHtsRZiO2BRz4YNXAQ=='
+
+
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(test_headers())
