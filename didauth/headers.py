@@ -86,7 +86,7 @@ class HeaderVerifier:
             required_headers = [] # implementors should require (request-target) and date
         self._required_headers = [h.lower() for h in required_headers]
 
-    async def verify(self, headers: Mapping, method=None, path=None, use_key_cache: bool = True):
+    async def verify(self, headers: Mapping, method=None, path=None):
         """
         Parse Signature Authorization header and verify signature
 
@@ -121,7 +121,7 @@ class HeaderVerifier:
         if not self._handlers.supports(algo):
             raise VerifierException("Unsupported HTTP signature algorithm '{}'".format(algo))
 
-        pubkey = await self._key_finder.find_key(key_id, algo, use_key_cache)
+        pubkey = await self._key_finder.find_key(key_id, algo)
         if not pubkey:
             raise VerifierException("Cannot locate public key for '{}'".format(key_id))
 
