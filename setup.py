@@ -3,7 +3,7 @@ from setuptools import setup
 
 
 pkg_name = 'didauth'
-version = '1.2.0'
+version = '1.2.1'
 
 setup(
     name=pkg_name,
