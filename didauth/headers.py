@@ -1,3 +1,4 @@
+import logging
 from typing import Mapping, Sequence
 
 import multidict
@@ -8,6 +9,8 @@ from . import registry
 from .utils import \
     build_signature_template, generate_message, parse_authorization_header, \
     decode_string, encode_string
+
+LOGGER = logging.getLogger(__name__)
 
 
 class HeaderSigner:
@@ -124,6 +127,7 @@ class HeaderVerifier:
         pubkey = await self._key_finder.find_key(key_id, algo)
         if not pubkey:
             raise VerifierException("Cannot locate public key for '{}'".format(key_id))
+        LOGGER.debug("Got %s public key for '%s': %s", algo, key_id, pubkey)
 
         handler = self._handlers.create_verifier(algo, pubkey)
         message = generate_message(auth_headers, headers, method, path)
