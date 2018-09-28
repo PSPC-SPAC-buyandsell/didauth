@@ -35,7 +35,7 @@ class StaticKeyFinder(KeyFinderBase):
         self._keys[key_type][key_id] = key
 
     def remove_key(self, key_id: str, key_type: str):
-        if key_type in self._keys:
+        if key_type in self._keys and key_id in self._keys[key_type]:
             del self._keys[key_type][key_id]
 
     async def _cache_key(self, key_id: str, key_type: str, key: bytes):
