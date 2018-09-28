@@ -70,7 +70,7 @@ def generate_message(required_headers, headers, method=None, path=None) -> bytes
             signable_list.append(signing_header(h, '{} {}'.format(method.lower(), path)))
         else:
             if h not in headers:
-                raise SignerException('Missing required header "%s"' % h)
+                raise SignerException('Missing required header "{}"'.format(h))
             signable_list.append(signing_header(h, headers.getall(h)))
 
     signable = '\n'.join(signable_list).encode('ascii')
