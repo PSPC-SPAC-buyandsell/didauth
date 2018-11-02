@@ -1,9 +1,10 @@
 import os
+import runpy
 from setuptools import setup
 
-
 pkg_name = 'didauth'
-version = '1.2.2'
+meta = runpy.run_path("./{}/version.py".format(pkg_name))
+version = meta['__version__']
 
 setup(
     name=pkg_name,
@@ -13,15 +14,15 @@ setup(
         '{}.ext'.format(pkg_name),
     ],
     version=version,
-    description='DID authentication',
+    description='DID authentication support',
     license='MIT',
     author='PSPC-SPAC',
-    author_email='',
+    author_email='andrew@1crm.com',
     url='https://github.com/PSPC-SPAC-buyandsell/{}'.format(pkg_name),
-    download_url='https://github.com/PSPC-SPAC-buyandsell/{}/archive/{}.tar.gz'.format(pkg_name, version),
+    download_url='https://github.com/PSPC-SPAC-buyandsell/{}/archive/v{}.tar.gz'.format(pkg_name, version),
     keywords=['verified-organizations-network', 'VON', 'SRI', 'DID', 'TheOrgBook', 'Hyperledger', 'Indy', 'HTTP'],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
