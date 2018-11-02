@@ -7,7 +7,11 @@ Based on code from [httpsig](https://github.com/ahknight/httpsig) and following 
 ### Requirements
 
 - Python 3.5.3+
-- [aiohttp](https://aiohttp.readthedocs.io)
 - [libnacl](https://libnacl.readthedocs.io)
+
+### Optional integrations
+
+- [aiohttp](https://aiohttp.readthedocs.io)
+- [requests](https://pypi.org/project/requests/)
 - [Python-RSA](https://github.com/sybrenstuvel/python-rsa)
 - [secp256k1](https://github.com/ludbb/secp256k1-py)
